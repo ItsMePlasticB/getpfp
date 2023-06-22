@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<head>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@300;500&display=swap" rel="stylesheet"> 
+<link href="https://fonts.googleapis.com/css2?family=Orbit&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="underdev.css">
+    <title>Under Development</title>
+</head>
+<body>
+    <font size="+4"><br> <br> <br> <br> <br>Welcome to pbjxd1<br>
+    <a href="player.html">Shall we Continue?</a> <br> <br>
+
+    <button onclick="authorizeSpotify()">Get PFP</button>
+
+    <script>
+        function authorizeSpotify() {
+            // Replace 'YOUR_CLIENT_ID' with your actual client ID from the Spotify Developer Dashboard
+            const clientId = 'bf4fdd7f512e42e99863af6efe5d6e56';
+            // Replace 'YOUR_REDIRECT_URI' with the URL where you want the Spotify API to redirect after authorization
+            const redirectUri = 'http://localhost:5500/player.html';
+
+            const scopes = ['user-read-private'];
+
+            // Generate the authorization URL
+            const authUrl = `https://accounts.spotify.com/authorize?client_id=${clientId}&response_type=token&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${encodeURIComponent(scopes.join(' '))}`;
+
+            // Redirect the user to the authorization URL
+            window.location.href = authUrl;
+        }
+
+        // After the user is redirected back to the redirect URI, you can retrieve the access token and make API requests
+        // Extract the access token from the URL fragment
+        const accessToken = window.location.hash.substr(1).split('&')[0].split('=')[1];
+        if (accessToken) {
+            // Make a GET request to the Spotify API to fetch the user's profile information
+            fetch('https://api.spotify.com/v1/me', {
+                headers: {
+                    'Authorization': 'Bearer ' + accessToken
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Access the profile picture URL from the retrieved data
+                const profilePictureUrl = data.images[0].url;
+
+                // Display the profile picture
+                const imgElement = document.createElement('img');
+                imgElement.src = profilePictureUrl;
+                document.body.appendChild(imgElement);
+            })
+            .catch(error => console.log(error));
+        }
+    </script>
+
+
+    © pbjxd1 2023 <br> <br> <br> <br>  
+</body>
+</html>

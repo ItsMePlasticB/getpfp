@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>css is shit</title>
+    <link rel="stylesheet" href="underdev.css">
+</head>
+
+<body>
+    <h1>pbjxd1</h1>
+    <button id="togglePlay"><img src="/toggleplay.png"></button>
+    <button id="previousTrack">Back</button>
+
+    <script src="https://sdk.scdn.co/spotify-player.js"></script>
+    <script>
+        const accessToken = window.location.hash.substr(1).split('&')[0].split('=')[1]; {
+        const player = new Spotify.Player({
+        name: 'My Web Playback SDK',
+        getOAuthToken: callback => {
+          callback(accessToken);
+        },
+                volume: 1
+            });
+
+            
+            
+            
+            
+
+            // Ready
+            player.addListener('ready', ({ device_id }) => {
+                console.log('Ready with Device ID', device_id);
+            });
+
+            // Not Ready
+            player.addListener('not_ready', ({ device_id }) => {
+                console.log('Device ID has gone offline', device_id);
+            });
+
+            player.addListener('initialization_error', ({ message }) => {
+                console.error(message);
+            });
+
+            player.addListener('authentication_error', ({ message }) => {
+                console.error(message);
+            });
+
+            player.addListener('account_error', ({ message }) => {
+                console.error(message);
+            });
+
+            document.getElementById('togglePlay').onclick = function () {
+                player.togglePlay();
+                console.log('Toggled!')
+            };
+
+            document.getElementById('previousTrack').onclick = function () {
+                player.previousTrack().then(() => {
+                    console.log('Set to previous track!');
+                });
+            };
+
+            player.getCurrentState().then(state => {
+                if (!state) {
+                    console.error('User is not playing music through the Web Playback SDK');
+                    return;
+                }
+
+                var current_track = state.track_window.current_track;
+                var next_track = state.track_window.next_tracks[0];
+
+                console.log('Currently Playing', current_track);
+                console.log('Playing Next', next_track);
+            });
+
+
+            player.connect();
+        }
+
+        
+        if (accessToken) {
+            // Make a GET request to the Spotify API to fetch the user's profile information
+            fetch('https://api.spotify.com/v1/me', {
+                headers: {
+                    'Authorization': 'Bearer ' + accessToken
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Access the profile picture URL from the retrieved data
+                const profilePictureUrl = data.images[0].url;
+
+                // Display the profile picture
+                const imgElement = document.createElement('img');
+                imgElement.src = profilePictureUrl;
+                document.body.appendChild(imgElement);
+            })
+            .catch(error => console.log(error));
+        }
+        function getUserProfile(accessToken) {
+      fetch('https://api.spotify.com/v1/me', {
+        headers: {
+          'Authorization': 'Bearer ' + accessToken
+        }
+      })
+      .then(response => response.json())
+      .then(data => {
+        const userName = data.display_name || data.id;
+        console.log('User Name:', userName);
+      })
+      .catch(error => {
+        console.error('Error fetching user profile:', error);
+      });
+    }
+        }
+    </script>
+</body>
+
+</html>

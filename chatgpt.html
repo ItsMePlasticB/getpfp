@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Spotify Web Playback SDK Authentication</title>
+  <script src="https://sdk.scdn.co/spotify-player.js"></script>
+</head>
+<body>
+  <button id="login-btn" onclick="loginWithSpotify()">Login with Spotify</button>
+  
+  <div id="player"></div>
+
+  <script>
+    // Client ID obtained from Spotify Developer Dashboard
+    const clientID = 'bf4fdd7f512e42e99863af6efe5d6e56';
+    const redirectURI = 'http://localhost:5500/player.html'; // Your redirect URI
+
+    function loginWithSpotify() {
+      const scopes = ['user-read-private', 'user-read-email']; // Add necessary scopes
+
+      // Generate a random state value to include in the authorization URL
+      const state = generateRandomString(16);
+      localStorage.setItem('spotify_auth_state', state);
+
+      // Generate the authorization URL
+      const authURL = 'https://accounts.spotify.com/authorize' +
+        '?response_type=token' +
+        '&client_id=' + encodeURIComponent(clientID) +
+        '&scope=' + encodeURIComponent(scopes.join(' ')) +
+        '&redirect_uri=' + encodeURIComponent(redirectURI) +
+        '&state=' + encodeURIComponent(state);
+
+      // Redirect the user to the authorization URL
+      window.location.href = authURL;
+    }
+
+    function generateRandomString(length) {
+      let text = '';
+      const possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+
+      for (let i = 0; i < length; i++) {
+        text += possible.charAt(Math.floor(Math.random() * possible.length));
+      }
+
+      return text;
+    }
+
+    // Check if the URL contains the access token and state
+    const urlParams = new URLSearchParams(window.location.hash.substring(1));
+    const accessToken = urlParams.get('access_token');
+    const state = urlParams.get('state');
+    const storedState = localStorage.getItem('spotify_auth_state');
+
+    // Verify the state to prevent cross-site request forgery attacks
+    if (accessToken && (state === null || state !== storedState)) {
+      alert('Authorization failed. Please try again.');
+    } else {
+      localStorage.removeItem('spotify_auth_state');
+    }
+
+    // You can now use the access token to initialize the Spotify Web Playback SDK
+    if (accessToken) {
+      const player = new Spotify.Player({
+        name: 'My Web Playback SDK',
+        getOAuthToken: callback => {
+          callback(accessToken);
+        },
+        volume: 0.5
+      });
+
+      // Connect to the player
+      player.connect().then(success => {
+        if (success) {
+          console.log('The Web Playback SDK has been successfully connected to Spotify!');
+          getUserProfile(accessToken); // Get user's profile information
+        } else {
+          console.error('Failed to connect to Spotify Web Playback SDK.');
+        }
+      });
+
+      // Render the Spotify player in the 'player' div element
+      player.addListener('ready', ({ device_id }) => {
+        console.log('Ready with Device ID', device_id);
+        document.getElementById('player').innerHTML = '<iframe src="https://open.spotify.com/embed?uri=spotify:playlist:37i9dQZF1DX2sUQwD7tbmL&theme=white" width="300" height="380" frameborder="0" allowtransparency="true" allow="encrypted-media"></iframe>';
+      });
+    }
+
+    // Function to get the user's profile information
