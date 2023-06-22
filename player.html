@@ -14,14 +14,13 @@
     <script src="https://sdk.scdn.co/spotify-player.js"></script>
     <script>
         const accessToken = window.location.hash.substr(1).split('&')[0].split('=')[1]; {
-        const player = new Spotify.Player({
-        name: 'My Web Playback SDK',
-        getOAuthToken: callback => {
-          callback(accessToken);
-        },
-                volume: 1
-            });
-
+            window.onSpotifyWebPlaybackSDKReady = () => {
+  const token = '[My access token]';
+  const player = new Spotify.Player({
+    name: 'Web Playback SDK Quick Start Player',
+    getOAuthToken: cb => { cb(token); },
+    volume: 0.5
+  });
             
             
             
